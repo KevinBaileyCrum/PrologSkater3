@@ -10,12 +10,19 @@
 not( X ) :- X, !, fail.
 not( _ ).
 
+
+
+% degrees:minute -> degrees
+%   min * 1/60 = degrees
+degmin_to_degrees( Deg, Min, Degrees ) :-
+  Degrees is Deg + (Min/60).
+
+
+
+
+
 %
 % Is there a path from one node to another?
-%
-
-
-%
 % Find a path from one node to another.
 %
 
@@ -38,9 +45,14 @@ listpath( Node, End, Outlist ) :-
 listpath( Node, Node, _, [Node] ).
 listpath( Node, End, Tried, [Node|List] ) :-
    flight( Node, Next, time( Hour, Min ) ),
+   
+   airport( Node, _, _, _ ),
+   airport( Next, _, _, _ ),
+
+
    not( member( Next, Tried )),
    % cut at the end of vvv list path below stops at first success
-   listpath( Next, End, [Next|Tried], List ),!.
+   listpath( Next, End, [Next|Tried], List ).
 
 
 /*
