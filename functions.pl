@@ -30,7 +30,8 @@ haversine_radians( Lat1, Lon1, Lat2, Lon2, Distance ) :-
 % isAirport( X )
 % Takes in airport abreviation and finds corresponding
 % values of Latitude and Longitude.  It converts
-% said values minutes -> degrees -> radians
+% said values minutes -> degrees -> radians.
+%   DegAndMin1 is first lat converted and summed
 isAirport( X ) :-
   airport( X, Name, degmin( Deg1, Min1), degmin( Deg2, Min2)), nl,
   write(Deg1), nl,
