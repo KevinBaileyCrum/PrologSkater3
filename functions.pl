@@ -5,7 +5,7 @@
 not( X ) :- X, !, fail.
 not( _ ).
     
-% Distance functions ------------------------------------------------
+% Distance functions & Time Conversion fcn --------------------------
 % converts degrees:minute -> degrees
 %   min * 1/60 = degrees
 degminToDegrees( Deg, Min, Degrees ) :-
@@ -40,7 +40,7 @@ getDistance( To, From, Distance ) :-
   % LatDegs1 - conversion to radians > Lat1
   degreesToRadians( LatDegs1, Lat1),
   
-  degminToDegrees( LonD1, LonM1, LonDegs1 ),
+  degminToDegrees( LonD1, LonM1, LonDegs1),
   degreesToRadians( LonDegs1, Lon1 ),
   
   degminToDegrees( LatD2, LatM2, LatDegs2 ), 
@@ -51,17 +51,16 @@ getDistance( To, From, Distance ) :-
   
   haversine_radians( Lat1, Lon1, Lat2, Lon2, Distance ).
 
+
 % -------------------------------------------------------------------
-    
-%
-% Is there a path from one node to another?
-% Find a path from one node to another.
-%
+% Database node traversal
+% -------------------------------------------------------------------
 
 fly( Node, Node ) :-
   write( Node ), write( ' is ' ), write( Node ), nl.
-fly( Node, Next ) :-
-  listpath( Node, Next, [Node], List ),
+fly( Node, Next ) :-                        
+  % start time as 0
+  listpath( Node, Next, [Node], List, Time ),
   write( Node ), write( ' to ' ), write( Next ), write( ' is ' ),
   writepath( List ),
   fail.
@@ -74,78 +73,18 @@ writepath( [Head|Tail] ) :-
 listpath( Node, End, Outlist ) :-
   listpath( Node, End, [Node], Outlist ).
 
-listpath( Node, Node, _, [Node] ).
-listpath( Node, End, Tried, [Node|List] ) :-
+listpath( Node, Node, _, [Node], Time ).
+listpath( Node, End, Tried, [Node|List], Time ) :-
   flight( Node, Next, time( Hour, Min ) ),
    
   airport( Node, _, _, _ ),
   airport( Next, _, _, _ ),
-
+ 
+  %  getDistance( Node, Next, Distance),
 
   not( member( Next, Tried )),
   % cut at the end of vvv list path below stops at first success
-  listpath( Next, End, [Next|Tried], List ).
-
-
-/*
-
-mathfns( X, List ) :-
-   S is sin( X ),
-   C is cos( X ),
-   Q is sqrt( X ),
-   List = [S, C, Q].
-
-constants( List ) :-
-   Pi is pi,
-   E is e,
-   Epsilon is epsilon,
-   List = [Pi, E, Epsilon].
-
-sincos( X, Y ) :-
-   Y is sin( X ) ** 2 + cos( X ) ** 2.
-
-
-
-% isAirport( X )
-% Takes in airport abreviation and finds corresponding
-% values of Latitude and Longitude.  It converts
-% said values minutes -> degrees -> radians.
-%   min = 1deg/60     rad = deg*pi/180 
-isAirport( X ) :-
-  airport( X, Name, degmin( Deg1, Min1), degmin( Deg2, Min2)), nl,
-      
-  % Get North Latitude of X
-  write(Deg1), nl,
-  write(Min1), nl,
-  Frac1 is Min1 / 60,
-  write(Frac1), nl,
-  DegAndMin1 is Deg1 + Frac1,
-  write(DegAndMin1), nl,
-  D1asPi is DegAndMin1 *(pi / 180),
-  write('North Lat in Radians for X '), write(D1asPi), nl,
-
-  % Get West Longitutde of X
-  Frac2 is Min2 / 60,
-  DegAndMin2 is Deg2 + Frac2,
-  D2asPi is DegAndMin2 *(pi / 180),
-  write('West Long in Radians for X '), write(D2asPi), nl.
-  
-  % Get North Latitude of Y
-  %airport( Y, Name, degmin( yDeg1, yMin1), degmin( yDeg2, yMin2)), nl,
-  %write(yDeg1), nl,
-  %write(yMin1),
-
-  
-
-
-% is sea -- group0.test asks fly(sea,lax)
-%fly( X, Y ) :-
-  % write('this q'),
-  % write('y equal'),
-  %write(Y), nl,
-  %isAirport( X ).
-*/    
-
+  listpath( Next, End, [Next|Tried], List, Time ).
 
 
 
