@@ -1,58 +1,90 @@
 % $Id: functions.pl, Kevin Crum - CMPS 112 -- ASG4
 
 
-% $Id: graphpaths.pl,v 1.3 2011-05-19 19:53:59-07 - - $ */
-
-%
 % Prolog version of not.
-%
-
 not( X ) :- X, !, fail.
 not( _ ).
-
-
-
-% degrees:minute -> degrees
+    
+% Distance functions ------------------------------------------------
+% converts degrees:minute -> degrees
 %   min * 1/60 = degrees
-degmin_to_degrees( Deg, Min, Degrees ) :-
+degminToDegrees( Deg, Min, Degrees ) :-
   Degrees is Deg + (Min/60).
 
 
+% converts degrees -> radians
+%   degree * (pi/180) = rad
+degreesToRadians( Degrees, Radians ) :-
+  Pi is pi, 
+  Radians is ( Degrees * pi ) / 180.
 
 
+haversine_radians( Lat1, Lon1, Lat2, Lon2, Distance ) :-
+  Dlon is Lon2 - Lon1,
+  Dlat is Lat2 - Lat1,
+  A is sin( Dlat / 2 ) ** 2
+     + cos( Lat1 ) * cos( Lat2 ) * sin( Dlon / 2 ) ** 2,
+  Dist is 2 * atan2( sqrt( A ), sqrt( 1 - A )),
+  Distance is Dist * 3961,
+  write('in haversine '), write( Distance ),
+  nl.
 
+
+getDistance( To, From, Distance ) :-
+  airport( To, _, degmin( LatD1, LatM1 ), degmin( LonD1, LonM1 ) ),
+  airport( From, _, degmin( LatD2, LatM2 ), degmin( LonD2, LonM2) ),
+  
+  % convert Lat and Long
+  % LatD1, LatM1 - conversion to degrees > LatDegs1
+  degminToDegrees( LatD1, LatM1, LatDegs1),
+  % LatDegs1 - conversion to radians > Lat1
+  degreesToRadians( LatDegs1, Lat1),
+  
+  degminToDegrees( LonD1, LonM1, LonDegs1 ),
+  degreesToRadians( LonDegs1, Lon1 ),
+  
+  degminToDegrees( LatD2, LatM2, LatDegs2 ), 
+  degreesToRadians( LatDegs2, Lat2 ),
+
+  degminToDegrees( LonD2, LonM2, LonDegs2 ),
+  degreesToRadians( LonDegs2, Lon2 ),
+  
+  haversine_radians( Lat1, Lon1, Lat2, Lon2, Distance ).
+
+% -------------------------------------------------------------------
+    
 %
 % Is there a path from one node to another?
 % Find a path from one node to another.
 %
 
 fly( Node, Node ) :-
-   write( Node ), write( ' is ' ), write( Node ), nl.
+  write( Node ), write( ' is ' ), write( Node ), nl.
 fly( Node, Next ) :-
-   listpath( Node, Next, [Node], List ),
-   write( Node ), write( ' to ' ), write( Next ), write( ' is ' ),
-   writepath( List ),
-   fail.
+  listpath( Node, Next, [Node], List ),
+  write( Node ), write( ' to ' ), write( Next ), write( ' is ' ),
+  writepath( List ),
+  fail.
 
 writepath( [] ) :-
-   nl.
+  nl.
 writepath( [Head|Tail] ) :-
-   write( ' ' ), write( Head ), writepath( Tail ).
+  write( ' ' ), write( Head ), writepath( Tail ).
 
 listpath( Node, End, Outlist ) :-
-   listpath( Node, End, [Node], Outlist ).
+  listpath( Node, End, [Node], Outlist ).
 
 listpath( Node, Node, _, [Node] ).
 listpath( Node, End, Tried, [Node|List] ) :-
-   flight( Node, Next, time( Hour, Min ) ),
+  flight( Node, Next, time( Hour, Min ) ),
    
-   airport( Node, _, _, _ ),
-   airport( Next, _, _, _ ),
+  airport( Node, _, _, _ ),
+  airport( Next, _, _, _ ),
 
 
-   not( member( Next, Tried )),
-   % cut at the end of vvv list path below stops at first success
-   listpath( Next, End, [Next|Tried], List ).
+  not( member( Next, Tried )),
+  % cut at the end of vvv list path below stops at first success
+  listpath( Next, End, [Next|Tried], List ).
 
 
 /*
@@ -72,15 +104,6 @@ constants( List ) :-
 sincos( X, Y ) :-
    Y is sin( X ) ** 2 + cos( X ) ** 2.
 
-haversine_radians( Lat1, Lon1, Lat2, Lon2, Distance ) :-
-   Dlon is Lon2 - Lon1,
-   Dlat is Lat2 - Lat1,
-   A is sin( Dlat / 2 ) ** 2
-      + cos( Lat1 ) * cos( Lat2 ) * sin( Dlon / 2 ) ** 2,
-   Dist is 2 * atan2( sqrt( A ), sqrt( 1 - A )),
-   Distance is Dist * 3961,
-   write( Distance ), 
-   nl.
 
 
 % isAirport( X )
