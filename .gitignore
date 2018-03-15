@@ -1,0 +1,7 @@
+# ignore everything
+*
+
+# except the following
+!.gitignore
+!functions.pl
+!database.pl
